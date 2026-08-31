@@ -83,8 +83,8 @@ export const routes: Routes = [
                 path: 'dashboard',
                 canActivate: [dashboardAccessGuard],
                 loadComponent: () =>
-                    import('@iptvnator/workspace/dashboard/feature').then(
-                        (c) => c.WorkspaceDashboardRailsComponent
+                    import('./xciptv-home.component').then(
+                        (c) => c.XciptvHomeComponent
                     ),
             },
             {
