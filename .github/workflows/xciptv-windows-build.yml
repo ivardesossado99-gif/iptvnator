@@ -1,0 +1,91 @@
+name: XCIPTV Windows Build
+
+on:
+    push:
+        branches:
+            - xciptv-ui
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    build-windows:
+        name: Build Windows x64 installer
+        runs-on: windows-2022
+        timeout-minutes: 120
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6.0.10
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '22'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Inject build commit
+              env:
+                  BUILD_COMMIT: ${{ github.sha }}
+              run: node tools/build/inject-build-commit.mjs
+
+            - name: Build frontend
+              run: pnpm nx build web --skip-nx-cache
+
+            - name: Resolve pinned Windows Embedded MPV runtime
+              id: windows-embedded-mpv-runtime-pin
+              shell: bash
+              run: node tools/embedded-mpv/windows-runtime-pin.mjs --github-output
+
+            - name: Stage Windows Embedded MPV runtime
+              shell: bash
+              env:
+                  WINDOWS_RUNTIME_URL: ${{ steps.windows-embedded-mpv-runtime-pin.outputs.url }}
+                  WINDOWS_RUNTIME_SHA256: ${{ steps.windows-embedded-mpv-runtime-pin.outputs.sha256 }}
+              run: pnpm embedded-mpv:stage-runtime:windows-archive -- "${WINDOWS_RUNTIME_URL}" "${WINDOWS_RUNTIME_SHA256}"
+
+            - name: Build backend
+              env:
+                  IPTVNATOR_EMBEDDED_MPV_PLATFORM: win32
+                  IPTVNATOR_EMBEDDED_MPV_ARCH: x64
+                  IPTVNATOR_REQUIRE_EMBEDDED_MPV: '1'
+              run: pnpm run build:backend
+
+            - name: Force Windows x64 installer
+              shell: bash
+              run: |
+                  node <<'NODE'
+                  const fs = require('fs');
+                  const pkg = JSON.parse(fs.readFileSync('electron-builder.json', 'utf8'));
+                  for (const target of pkg.win?.target ?? []) {
+                    if (target && typeof target === 'object') target.arch = ['x64'];
+                  }
+                  fs.writeFileSync('electron-builder.json', JSON.stringify(pkg, null, 4) + '\n');
+                  NODE
+
+            - name: Make Windows installer
+              env:
+                  CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+                  IPTVNATOR_EMBEDDED_MPV_PLATFORM: win32
+                  IPTVNATOR_EMBEDDED_MPV_ARCH: x64
+                  IPTVNATOR_REQUIRE_EMBEDDED_MPV: '1'
+              run: pnpm run make:app -- --publishPolicy=never
+
+            - name: Show generated files
+              shell: bash
+              run: find dist/executables -maxdepth 2 -type f -print
+
+            - name: Upload Windows installer
+              uses: actions/upload-artifact@v7
+              with:
+                  name: iptvnator-xciptv-windows-x64
+                  path: dist/executables/*.exe
+                  if-no-files-found: error
+                  retention-days: 14
