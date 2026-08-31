@@ -7,7 +7,7 @@ on:
     workflow_dispatch:
 
 permissions:
-    contents: read
+    contents: write
 
 jobs:
     build-windows:
@@ -89,3 +89,14 @@ jobs:
                   path: dist/executables/*.exe
                   if-no-files-found: error
                   retention-days: 14
+
+            - name: Publish permanent GitHub release
+              shell: bash
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release delete xciptv-v2 --yes --cleanup-tag || true
+                  gh release create xciptv-v2 dist/executables/*.exe \
+                    --target "${GITHUB_SHA}" \
+                    --title "IPTVnator XCIPTV Style v2" \
+                    --notes "Build Windows x64 personalizada com interface inspirada no XCIPTV."
