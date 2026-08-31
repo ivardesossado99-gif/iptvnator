@@ -5,19 +5,68 @@
 
 @include portal.live-layout;
 
-// ─── Sidebar-header overrides ──────────────────────────────────────────────
-// Base .sidebar-header styles come from portal-sidebar
-.sidebar-header button {
-    @include mat.form-field-density(-5);
+:host {
+    background:
+        radial-gradient(ellipse at 72% 105%, rgba(0, 141, 255, 0.30), transparent 45%),
+        linear-gradient(145deg, #05275d 0%, #064b9c 43%, #05265d 100%);
 }
 
-// ─── Side-panel channel list ───────────────────────────────────────────────
 .sidebar {
+    border-right: 1px solid rgba(255,255,255,.18) !important;
+    background: linear-gradient(180deg, rgba(4,50,108,.98), rgba(3,35,80,.98)) !important;
+    box-shadow: 8px 0 24px rgba(0,0,0,.18);
+
     app-portal-channels-list {
         flex: 1;
         overflow: hidden;
         width: 100%;
     }
+}
+
+.sidebar-header {
+    min-height: 58px;
+    border-bottom: 1px solid rgba(255,255,255,.18) !important;
+    background: linear-gradient(180deg, #0874c7, #075ca7) !important;
+    color: white !important;
+}
+
+.sidebar-header button {
+    @include mat.form-field-density(-5);
+    color: #fff !important;
+}
+
+.sidebar .category-title,
+.sidebar .category-count {
+    color: #fff !important;
+}
+
+.content-container {
+    position: relative;
+    background:
+        radial-gradient(ellipse at 80% 100%, rgba(0,160,255,.25), transparent 42%),
+        linear-gradient(145deg,#073b83 0%,#0757a8 43%,#05326e 100%) !important;
+}
+
+/* XC-style category/channel list treatment inside the existing component. */
+:host ::ng-deep app-portal-channels-list {
+    --mat-sys-surface-container: transparent;
+    --mat-sys-on-surface: #fff;
+    color: #fff;
+}
+
+:host ::ng-deep app-portal-channels-list .mdc-list-item,
+:host ::ng-deep app-portal-channels-list .channel-item,
+:host ::ng-deep app-portal-channels-list a,
+:host ::ng-deep app-portal-channels-list button {
+    border-radius: 0 !important;
+}
+
+:host ::ng-deep app-portal-channels-list .mdc-list-item:hover,
+:host ::ng-deep app-portal-channels-list .channel-item:hover,
+:host ::ng-deep app-portal-channels-list .active,
+:host ::ng-deep app-portal-channels-list [aria-selected='true'] {
+    background: linear-gradient(90deg,#08a9c9,#0b8fc2) !important;
+    color: #fff !important;
 }
 
 .live-loading-content {
@@ -39,112 +88,85 @@
     min-height: 0;
     overflow: hidden;
     width: 100%;
+    background: transparent;
 }
 
 .category-content-header {
     @include panel.standard-panel-header($sticky: true);
-
-    // The paginator does not shrink, so on any window narrow enough that it
-    // and the category meta cannot share a line it took the whole row and the
-    // meta collapsed underneath it. Let it drop to a line of its own instead.
     flex-wrap: wrap;
+    background: linear-gradient(180deg,rgba(5,65,137,.97),rgba(4,50,108,.97)) !important;
+    border-bottom: 1px solid rgba(255,255,255,.15) !important;
 }
 
-.category-meta {
-    @include panel.standard-panel-meta();
-}
-
-.category-title {
-    @include panel.standard-panel-title();
-}
-
-.category-subtitle {
-    @include panel.standard-panel-subtitle();
-}
+.category-meta { @include panel.standard-panel-meta(); }
+.category-title { @include panel.standard-panel-title(); color:#fff !important; }
+.category-subtitle { @include panel.standard-panel-subtitle(); color:#cfeaff !important; }
 
 mat-paginator {
     background: transparent !important;
-    // Its own container already wraps internally, so letting it shrink turns
-    // a clipped next-page arrow into a second line of the paginator itself.
     min-width: 0;
     --mat-paginator-container-size: 40px;
-    --mat-paginator-enabled-icon-color: var(
-        --app-body-color,
-        var(--mat-sys-on-surface-variant)
-    );
-    --mat-paginator-disabled-icon-color: rgba(255, 255, 255, 0.18);
+    --mat-paginator-enabled-icon-color: #fff;
+    --mat-paginator-disabled-icon-color: rgba(255,255,255,.26);
 }
 
 app-grid-list.live-all-items-grid {
     --cover-grid-min-width: var(--live-channel-grid-min-width, 148px);
-
     display: block;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 16px 20px 20px;
+    padding: 18px 22px 24px;
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--app-muted-color) 55%, transparent)
-        transparent;
+    scrollbar-color: rgba(255,255,255,.35) transparent;
 }
 
-.loading-indicator {
-    display: flex;
-    justify-content: center;
-    padding: 16px;
+/* Logo cards: dark/navy squares with bright blue hover, like a TV portal grid. */
+:host ::ng-deep app-grid-list.live-all-items-grid .grid-item,
+:host ::ng-deep app-grid-list.live-all-items-grid .cover-item,
+:host ::ng-deep app-grid-list.live-all-items-grid a,
+:host ::ng-deep app-grid-list.live-all-items-grid button {
+    border-color: rgba(255,255,255,.20) !important;
+    background: rgba(1,24,63,.72) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,.18) !important;
 }
+
+:host ::ng-deep app-grid-list.live-all-items-grid .grid-item:hover,
+:host ::ng-deep app-grid-list.live-all-items-grid .cover-item:hover,
+:host ::ng-deep app-grid-list.live-all-items-grid a:hover,
+:host ::ng-deep app-grid-list.live-all-items-grid button:hover {
+    background: rgba(4,116,196,.88) !important;
+    border-color: rgba(255,255,255,.65) !important;
+}
+
+.loading-indicator { display:flex; justify-content:center; padding:16px; }
 
 .archive-unavailable-banner {
     margin: 12px 12px 0;
     padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background:
-        linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(255, 255, 255, 0)
-        ),
-        rgba(127, 127, 127, 0.05);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.04),
-        0 10px 20px -20px rgba(0, 0, 0, 0.35);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(0,29,71,.55);
+}
+.archive-unavailable-banner__title { font-size:.85rem; font-weight:600; letter-spacing:.01em; }
+.archive-unavailable-banner__description { margin-top:4px; font-size:.78rem; line-height:1.45; opacity:.74; }
+
+.video-player,
+.epg {
+    background: #03142e !important;
 }
 
-.archive-unavailable-banner__title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
+.sidebar-restore {
+    color:#fff !important;
+    background:rgba(0,76,155,.78) !important;
+    border:1px solid rgba(255,255,255,.22) !important;
 }
 
-.archive-unavailable-banner__description {
-    margin-top: 4px;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    opacity: 0.74;
-}
-
-// The header is one flex row of "N channels" plus the paginator. The
-// paginator's intrinsic width alone exceeds a phone, which crushed the count
-// to zero width and left the two drawn on top of each other.
-@media (max-width: 640px) {
-    .category-content-header {
-        padding-inline: 12px;
-    }
-
-    // The paginator already states "1 – 25 of 320" right next to it, and the
-    // room it costs here is taken straight out of the category title.
-    .category-subtitle {
-        display: none;
-    }
-
+@media (max-width:640px) {
+    .category-content-header { padding-inline:12px; }
+    .category-subtitle { display:none; }
     mat-paginator {
-        min-width: 0;
-
-        // Dropped for the same reason as the catalog grid: it is the widest
-        // part of the control and the least useful one on a phone.
-        ::ng-deep .mat-mdc-paginator-page-size {
-            display: none;
-        }
+        min-width:0;
+        ::ng-deep .mat-mdc-paginator-page-size { display:none; }
     }
 }
